@@ -1,33 +1,242 @@
 <html>
 
 <head>
-    <title>Byte Reduction Bookmarklet</title>
+    <title>How Fast?</title>
+    <script>
+        var getJSON = function(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'json';
+            xhr.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8');
+            xhr.onload = function() {
+                var status = xhr.status;
+                if (status === 200) {
+                    callback(null, xhr.response);
+                } else {
+                    callback(status, xhr.response);
+                }
+            };
+            xhr.send();
+        };
+
+
+        function loadImages() {
+            var l = document.getElementById('url').value,
+                baseUrl = 'https://res.cloudinary.com/patrickg-dev/image/fetch/f_auto/q_auto/',
+
+                img = l.split('?')[0];
+            if (l.split('?')[1]) {
+                img += "?" + encodeURIComponent(l.split('?')[1]);
+            }
+
+            getJSON(baseUrl + 'fl_getinfo/' + img, function(err, data) {
+                if (err !== null) {
+                    alert('Something went wrong: ' + err);
+                } else {
+                    var orgBytes = data.input.bytes,
+                        newBytes = data.output.bytes,
+                        newFormat = data.output.format,
+                        diffKB = (orgBytes - newBytes) / 1000;
+
+                    if (diffKB < 0) {
+                        alert("No optimisation possible, please use a higher quality input image.")
+                    }
+                    diffKB = diffKB.toFixed(1);
+                    if (diffKB > 1000) {
+                        diffKB = diffKB.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, '%25252C');
+                    } else {
+                        diffKB = -1 * diffKB;
+                    }
+                    var format = data.output.format,
+                        percentChange = 100 * (orgBytes - newBytes) / orgBytes,
+                        newUrl = baseUrl;
+                    percentChange = percentChange.toFixed(1);
+                    newUrl += "$percent_!" + percentChange + "!/";
+                    newUrl += "$bytes_!" + diffKB + "!/";
+                    newUrl += "$stickerWidth_" + document.getElementById("stickerSize").value;
+                    newUrl += "/$img_current/w_1/h_1/f_auto/q_auto/l_text:Open%20sans_320_center:▼,co_green,w_300,ar_1,c_lpad,b_rgb:0C163B,r_max/fl_layer_apply,g_north_east,e_outline:outer,co_rgb:3F5FFF,o_93/l_logo,w_60/fl_layer_apply,g_north,y_24/l_text:Open%20sans_84_center_bold:";
+                    newUrl += percentChange;
+                    newUrl += "%25,w_340,h_96,c_lpad,co_white/fl_layer_apply,g_north,y_90/l_text:Open%20sans_35_center_bold:REDUCTION,w_340,c_lpad,co_white/fl_layer_apply,g_north,y_176/l_text:Open%20sans_35_center:(";
+                    newUrl += diffKB;
+                    newUrl += "%20kB),w_340,c_lpad,co_white/fl_layer_apply,g_north,y_208/w_$stickerWidth/u_$img,w_800/fl_layer_apply";
+
+
+                    newUrl += "," + document.getElementById("gravity").value + "/";
+
+
+                    document.getElementById("imageBoxS").src = newUrl + "w_400/" + img;
+                    document.getElementById("imageBoxM").src = newUrl + "w_600/" + img;
+                    document.getElementById("imageBoxL").src = newUrl + "w_800/" + img;
+
+                    newText = "<p>This shows an example of the optimisation possible using Cloudinary. The <a href='" + l + "'>source image</a> was originally " + (orgBytes / 1000).toFixed(1) + " Kilobytes and after being optimised for quality and setting the format to <b>" + newFormat + "</b> Cloudinary reduced it to " + (newBytes / 1000).toFixed(1) + " Kilobytes, a reduction of " + -diffKB + " Kilobytes or " + percentChange + "%!";
+
+                    document.getElementById("textBlock").innerHTML = newText;
+                    var elements = document.getElementsByClassName('hidden-class');
+                    for (var i in elements) {
+                        if (elements.hasOwnProperty(i)) {
+                            elements[i].classList.remove("hidden-class");
+                            elements[i].classList.add("show-class");
+
+                        }
+                    }
+                }
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var url = urlParams.get('url');
+            document.getElementById('url').value = url;
+            if (url) {
+                loadImages();
+            }
+
+        }, false);
+    </script>
+
     <style>
-        Body {
-            font-family: Open Sans, Arial, sans-serif
+        body {
+            font-family: sans-serif;
+        }
+
+        input[type=text] {
+            width: 80%;
+        }
+
+        div#header {
+            width: 1000px;
+            height: 100px;
+        }
+
+        div#div_url {
+            width: 1000px;
+            height: 26px;
+            float: left;
+            display: block;
+        }
+
+
+        div#pickers {
+            margin-top: 5px;
+            display: block;
+        }
+
+        div.picker {
+            float: left;
+            display: inline-block;
+            margin-right: 20px;
+
+        }
+
+        div.imageHolder {
+            clear: left;
+            padding: 20px;
+
+        }
+
+        div.textHolder {
+            clear: left;
+
+        }
+
+        div.footer {
+            clear: left;
+            margin-bottom: 100px;
+            padding-top: 10px;
+        }
+
+        .hidden-class {
+            display: none;
+        }
+
+        .show-class {
+            display: block;
+        }
+
+        div.image {
+            border: 2px solid black;
+            float: left;
+            margin: 20px;
+            display: block;
+        }
+
+        .header {
+            font-weight: bold;
+            text-align: center;
         }
     </style>
 
 </head>
 
 <body>
-    <img
-        src="https://res.cloudinary.com/patrickg/image/upload/f_auto/q_auto/w_300/cloudinary_logo.png">
-    <h1>Byte Reduction Bookmarklet</h1>
-    <p>Drag the link below into your bookmark bar. You may need to enable this
-        (View->Always Show Bookmarks Bar).</p>
-    <p><a href="javascript: (() => { var url, l = window.location, baseUrl = 'https://res.cloudinary.com/patrickg-dev/image/fetch/f_auto/q_auto/', img = l.protocol + '//' + l.hostname + l.pathname + encodeURIComponent(l.search); var getJSON = function(url, callback) { var xhr = new XMLHttpRequest(); xhr.open('GET', url, true); xhr.responseType = 'json'; xhr.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'); xhr.onload = function() { var status = xhr.status; if (status === 200) { callback(null, xhr.response); } else { callback(status, xhr.response); } }; xhr.send(); }; getJSON(baseUrl + 'fl_getinfo/' + img, function(err, data) { if (err !== null) { alert('Something went wrong: ' + err); } else { var orgBytes = data.input.bytes, newBytes = data.output.bytes, diffKB = (orgBytes - newBytes) / 1000; diffKB = diffKB.toFixed(1); if (diffKB > 1000) { diffKB = diffKB.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, '%25252C'); } else { diffKB = -1 * diffKB; } format = data.output.format, percentChange = 100 * (orgBytes - newBytes) / orgBytes, opts = 'w_800/l_text:Open%20sans_320_center:%E2%96%BC,co_green,w_300,ar_1,c_lpad,b_rgb:0C163B,r_max/fl_layer_apply,g_north_east,x_30,y_30,e_outline:outer,co_rgb:3F5FFF,o_93/l_logo,w_60/w_370,h_39,c_lpad/fl_layer_apply,g_north_east,y_54/l_text:Open%20sans_84_center_bold:' + percentChange.toFixed(1) + '%2525,w_370,h_96,c_lpad,co_white/fl_layer_apply,g_north_east,y_120/l_text:Open%20sans_35_center_bold:REDUCTION,w_370,c_lpad,co_white/fl_layer_apply,g_north_east,y_206/l_text:Open%20sans_35_center:(' + diffKB + ' kB),w_370,c_lpad,co_white/fl_layer_apply,g_north_east,y_238/if_iw_lt_800/w_iw,h_ih/if_end/', newUrl = baseUrl + opts + img; l.assign(newUrl); } });})();">Byte Reduction v0.9</a></p>
-    <h2>Instructions</h2>
-    <ol>
-        <li>Install the bookmarklet, by dragging the above link into your bookmarks bar.</li>
-        <li>Open a single image as a new page (right click and open in new tab)</li>
-        <li>Click on the Bookmarklet in your bookmark bar</li>
-        <li>Wait a few seconds and a new image is loaded with a sticker showing potential improvement</li>
-    </ol>
-    <p>Known issues: Does not look good for small images. No trapping of images that we do not optimise. </p>
-    <p><br />Use at your own risk!<br />Created by <a
-            href='mailto:patrick.glithro@cloudinary.com'> Patrick Glithro</a>,
-        please send me any bugs/suggestions/etc.</p>
+    <div id="header">
+        <h1>How Fast?</h1>
+        <p>Simply copy an image URL into the box below and submit to see how much Cloudinary can optimise your image.<br><br>Note some sites may have bot protection which prevent this from working, if so then download and upload into your Cloudinary account and test via that. For best results use Chrome browser. </p>
+        <form onSubmit="loadImages();return false;">
+            <div id="div_url">
+                <label for="url" class="header">Image URL: </label><input type="text" name="url" id="url">
+                <input type="submit">
+            </div>
+
+            <div id="pickers">
+                <div class="picker">
+                    <label for="gravity" class="header">Gravity:</label>
+                    <select name="gravity" id="gravity" onChange="loadImages()">
+                        <option value="g_north_west,y_-10">Top left</option>
+                        <option value="g_north,y_-10">Top centre</option>
+                        <option value="g_north_east,y_-10" selected>Top right</option>
+                        <option value="g_west">Middle left</option>
+                        <option value="g_center">Middle centre</option>
+                        <option value="g_east">Middle right</option>
+                        <option value="g_south_west,y_-10">Bottom left</option>
+                        <option value="g_south,y_-10">Bottom centre</option>
+                        <option value="g_south_east,y_-10">Bottom right</option>
+                    </select>
+                </div>
+
+                <div class="picker">
+                    <label for="stickerSize" class="header">Sticker Size:</label>
+                    <select name="stickerSize" id="stickerSize" onChange="loadImages()">
+                        <option value="110">Small</option>
+                        <option value="210" selected>Medium</option>
+                        <option value="310">Large</option>
+                    </select>
+                </div>
+
+                <!-- 
+            <div class="picker">
+                <div class="header">Style</div>
+                <input type="radio" id="circle" name="type" value="circle">
+                <label for="small">Circle</label><br>
+                <input type="radio" id="banner" name="type" value="banner" checked=true>
+                <label for="medium">Banner</label><br>
+            </div>
+ -->
+            </div>
+
+        </form>
+    </div>
+
+    <div class="imageHolder hidden-class">
+        <div class="image">
+            <img id="imageBoxS">
+        </div>
+        <div class="image">
+            <img id="imageBoxM">
+        </div>
+        <div class="image">
+            <img id="imageBoxL">
+        </div>
+    </div>
+
+    <div class="textHolder hidden-class">
+        <h2>Explanation</h2>
+        <div id="textBlock">TBC</div>
+    </div>
+    <div class="footer">
+        <p>Please send feedback via Slack to Patrick Glithro, thanks!</p>
+    </div>
 </body>
 
 </html>
