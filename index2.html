@@ -9,6 +9,7 @@
         var data = [];
             const xhrImage = new XMLHttpRequest();
             xhrImage.open("GET", url, true);
+            xhrImage.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8');
             xhrImage.send();
             xhrImage.onreadystatechange = () => {
                 if (xhrImage.readyState === xhrImage.HEADERS_RECEIVED) {
