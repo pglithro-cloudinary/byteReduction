@@ -55,7 +55,7 @@
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
                 } else {
-                    var orgBytes = originalImage['contentLength']/1000,
+                    var orgBytes = originalImage['contentLength'],
                         newBytes = data.output.bytes,
                         newFormat = data.output.format,
                         diffKB = (orgBytes - newBytes) / 1000;
