@@ -1,237 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>How Fast?</title>
-    <meta charset="UTF-8">
-    <script>
-        var getJSON = function(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'json';
-            xhr.setRequestHeader('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8');
-            xhr.onload = function() {
-                var status = xhr.status;
-                if (status === 200) {
-                    callback(null, xhr.response);
-                } else {
-                    callback(status, xhr.response);
-                }
-            };
-            xhr.send();
-        };
-
-        function loadImages() {
-            var l = document.getElementById('url').value,
-                baseUrl = 'https://res.cloudinary.com/patrickg-dev/image/fetch/f_auto/q_auto/',
-                img = l.split('?')[0];
-
-            if (l.split('?')[1]) {
-                img += "?" + encodeURIComponent(l.split('?')[1]);
-            }
-
-            getJSON(baseUrl + 'fl_getinfo/' + img, function(err, data) {
-                if (err !== null) {
-                    alert('Something went wrong: ' + err);
-                } else {
-                    var orgBytes = data.input.bytes,
-                        newBytes = data.output.bytes,
-                        newFormat = data.output.format,
-                        diffKB = (orgBytes - newBytes) / 1000;
-
-                    if (diffKB < 0) {
-                        alert("No optimisation possible, please use a higher quality input image.");
-                    }
-
-                    var manualPercent = document.getElementById("manualPercent").value;
-                    var manualBytes = document.getElementById("manualBytes").value;
-
-                    var percentChange = 100 * (orgBytes - newBytes) / orgBytes;
-                    diffKB = diffKB.toFixed(1);
-                    percentChange = percentChange.toFixed(1);
-
-                    if (manualPercent) {
-                        percentChange = manualPercent;
-                    }
-
-                    if (manualBytes) {
-                        diffKB = manualBytes;
-                    } else {
-                        diffKB = -1 * diffKB;
-                    }
-
-                    var newUrl = baseUrl;
-                    newUrl += "$percent_!" + percentChange + "!/";
-                    newUrl += "$bytes_!" + diffKB + "!/";
-                    newUrl += "$stickerWidth_" + document.getElementById("stickerSize").value;
-                    newUrl += "/$img_current/w_1/h_1/f_auto/q_auto/l_text:Open%20sans_320_center:▼,co_green,w_300,ar_1,c_lpad,b_rgb:0C163B,r_max/fl_layer_apply,g_north_east,e_outline:outer,co_rgb:3F5FFF,o_93/l_logo,w_60/fl_layer_apply,g_north,y_24/l_text:Open%20sans_84_center_bold:$(percent)";
-                    newUrl += "%25,w_340,h_96,c_lpad,co_white/fl_layer_apply,g_north,y_90/l_text:Open%20sans_35_center_bold:REDUCTION,w_340,c_lpad,co_white/fl_layer_apply,g_north,y_176/l_text:Open%20sans_35_center:($(bytes)%20kB),w_340,c_lpad,co_white/fl_layer_apply,g_north,y_208/w_$stickerWidth/u_$img,w_800/fl_layer_apply";
-                    newUrl += "," + document.getElementById("gravity").value + "/";
-
-                    document.getElementById("imageBoxS").src = newUrl + "w_400/" + img;
-                    document.getElementById("imageBoxM").src = newUrl + "w_600/" + img;
-                    document.getElementById("imageBoxL").src = newUrl + "w_800/" + img;
-
-                    var newText = "<p>This shows an example of the optimisation possible using Cloudinary. The <a href='" + l + "'>source image</a> was originally " + (orgBytes / 1000).toFixed(1) + " Kilobytes and after being optimised for quality and setting the format to <b>" + newFormat + "</b> Cloudinary reduced it to " + (newBytes / 1000).toFixed(1) + " Kilobytes, a reduction of " + -diffKB + " Kilobytes or " + percentChange + "%!";
-
-                    document.getElementById("textBlock").innerHTML = newText;
-
-                    Array.from(document.getElementsByClassName('hidden-class')).forEach(function(el) {
-                        el.classList.remove("hidden-class");
-                        el.classList.add("show-class");
-                    });
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var urlParams = new URLSearchParams(window.location.search);
-            var url = urlParams.get('url');
-            document.getElementById('url').value = url;
-            if (url) {
-                loadImages();
-            }
-        }, false);
-    </script>
-
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 100%;
-            margin: 0 auto;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        input[type=text] {
-            width: 80%;
-        }
-
-        .input-inline {
-            display: inline-block;
-            margin-left: 10px;
-            width: 80px;
-        }
-
-        div#header, div#div_url {
-            max-width: 1000px;
-            width: 100%;
-        }
-
-        div#pickers {
-            margin-top: 5px;
-            display: block;
-        }
-
-        div.picker {
-            float: left;
-            display: inline-block;
-            margin-right: 20px;
-        }
-
-        div.imageHolder {
-            clear: left;
-            padding: 20px;
-        }
-
-        div.textHolder {
-            clear: left;
-        }
-
-        div.footer {
-            clear: left;
-            margin-bottom: 100px;
-            padding-top: 10px;
-        }
-
-        .hidden-class {
-            display: none;
-        }
-
-        .show-class {
-            display: block;
-        }
-
-        div.image {
-            border: 2px solid black;
-            float: left;
-            margin: 20px;
-            display: block;
-        }
-
-        .header {
-            font-weight: bold;
-            text-align: center;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ByteReduction</title>
+  <link rel="icon" href="https://res.cloudinary.com/patrickg-dev/image/upload/w_32,f_auto,q_auto/logo" />
+  <style>
+    body {
+      background-color: #0C163B;
+      color: #fff;
+      font-family: 'Open Sans', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 2em;
+    }
+    .header {
+      font-size: 1.5em;
+      font-weight: 700;
+      margin-bottom: 1em;
+    }
+    .input-inline {
+      padding: 0.4em;
+      border-radius: 4px;
+      border: none;
+      width: 70%;
+      margin: 0.3em;
+    }
+    .button {
+      background-color: #3F5FFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.6em 1.2em;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .button:hover {
+      background-color: #5f7fff;
+    }
+    .hidden-class {
+      display: none;
+    }
+    .show-class {
+      display: block;
+      margin-top: 2em;
+    }
+    img {
+      border-radius: 8px;
+      margin: 0.5em;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+  </style>
 </head>
 
 <body>
-    <div id="header">
-        <h1>How Fast?</h1>
-        <p>Simply copy an image URL into the box below and submit to see how much Cloudinary can optimise your image.<br><br>Note some sites may have bot protection which prevent this from working. If so, download and upload into your Cloudinary account and test via that. For best results use Chrome browser. </p>
-        <form onSubmit="loadImages();return false;">
-            <div id="div_url">
-                <label for="url" class="header">Image URL: </label>
-                <input type="text" name="url" id="url">
-                <input type="submit">
-            </div>
 
-            <div id="pickers">
-                <div class="picker">
-                    <label for="gravity" class="header">Gravity:</label>
-                    <select name="gravity" id="gravity" onChange="loadImages()">
-                        <option value="g_north_west,y_-10">Top left</option>
-                        <option value="g_north,y_-10">Top centre</option>
-                        <option value="g_north_east,y_-10" selected>Top right</option>
-                        <option value="g_west">Middle left</option>
-                        <option value="g_center">Middle centre</option>
-                        <option value="g_east">Middle right</option>
-                        <option value="g_south_west,y_-10">Bottom left</option>
-                        <option value="g_south,y_-10">Bottom centre</option>
-                        <option value="g_south_east,y_-10">Bottom right</option>
-                    </select>
-                </div>
+  <!-- 🌐 Bookmarklet Box -->
+  <div id="bookmarklet-box"
+       style="margin: 1em auto; padding: 1em; border: 1px solid #3F5FFF; border-radius: 8px;
+              background: #0C163B; color: white; max-width: 600px;
+              opacity: 1; transition: opacity 0.6s ease, height 0.6s ease; overflow: hidden;">
+    <h3 style="margin-top: 0;">ByteReduction Bookmarklet</h3>
+    <p>Drag this button to your bookmarks bar. Then, when viewing an image page, click it to launch ByteReduction with that image pre-loaded.</p>
+    <p>
+      <a class="bookmarklet-btn"
+         href="javascript:(()=>{const pageUrl=window.location.href;const redirectBase='https://pglithro-cloudinary.github.io/byteReduction/';const redirectUrl=redirectBase+'?url='+encodeURIComponent(pageUrl);window.location.assign(redirectUrl);})();"
+         style="display:inline-block;background:#3F5FFF;color:white;padding:0.5em 1em;border-radius:6px;
+                text-decoration:none;font-weight:600;">
+        ByteReduction 🔍
+      </a>
+    </p>
+  </div>
 
-                <div class="picker">
-                    <label for="stickerSize" class="header">Sticker Size:</label>
-                    <select name="stickerSize" id="stickerSize" onChange="loadImages()">
-                        <option value="110">Small</option>
-                        <option value="210" selected>Medium</option>
-                        <option value="310">Large</option>
-                    </select>
-                </div>
+  <script>
+    // Fade-out bookmarklet box when ?url= is present
+    document.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('url')) {
+        const box = document.getElementById('bookmarklet-box');
+        if (box) {
+          box.style.opacity = '0';
+          box.style.height = '0';
+          setTimeout(() => box.style.display = 'none', 700);
+        }
+      }
+    });
+  </script>
 
-                <div class="picker">
-                    <label for="manualPercent" class="header">Manual %:</label>
-                    <input type="number" id="manualPercent" class="input-inline" placeholder="e.g. 43.2" step="any">
-                </div>
+  <!-- 🧠 Main Page Content -->
+  <div class="header">Cloudinary ByteReduction Tool</div>
+  <input id="url" class="input-inline" placeholder="Paste image URL here..." />
+  <button class="button" onclick="loadImages()">Analyse</button>
 
-                <div class="picker">
-                    <label for="manualBytes" class="header">Manual kB:</label>
-                    <input type="number" id="manualBytes" class="input-inline" placeholder="e.g. 512" step="any">
-                </div>
-            </div>
-        </form>
-    </div>
+  <div id="textBlock" class="hidden-class"></div>
 
-    <div class="imageHolder hidden-class">
-        <div class="image"><img id="imageBoxS"></div>
-        <div class="image"><img id="imageBoxM"></div>
-        <div class="image"><img id="imageBoxL"></div>
-    </div>
+  <div class="hidden-class" id="results">
+    <h3>Optimised Images</h3>
+    <img id="imageBoxS" width="400" />
+    <img id="imageBoxM" width="600" />
+    <img id="imageBoxL" width="800" />
+  </div>
 
-    <div class="textHolder hidden-class">
-        <h2>Explanation</h2>
-        <div id="textBlock">TBC</div>
-    </div>
+  <!-- Load script -->
+  <script src="byteReduction.js"></script>
 
-    <div class="footer">
-        <p>Please send feedback via Slack to Patrick Glithro, thanks!</p>
-    </div>
 </body>
 </html>
