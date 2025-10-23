@@ -73,7 +73,7 @@
   </div>
 
   <script>
-    // Fade-out bookmarklet box when ?url= is present
+    // Hide the bookmarklet box if already analysing an image
     document.addEventListener('DOMContentLoaded', function() {
       const params = new URLSearchParams(window.location.search);
       if (params.has('url')) {
@@ -101,23 +101,25 @@
     <img id="imageBoxL" width="800" />
   </div>
 
-  <!-- 🛠️ Guard for empty URL parameter -->
+  <!-- 🛠️ Prevent script from running on empty query -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const params = new URLSearchParams(window.location.search);
-      const url = params.get('url');
-      if (!url || url.trim() === '') {
-        const msg = document.createElement('p');
-        msg.style.color = '#bbb';
-        msg.style.marginTop = '1em';
-        msg.textContent = 'Paste an image URL above or use the ByteReduction 🔍 bookmarklet.';
-        document.querySelector('body').appendChild(msg);
-      }
-    });
-  </script>
+    const params = new URLSearchParams(window.location.search);
+    const hasUrl = params.has('url') && params.get('url').trim() !== '';
 
-  <!-- Load main logic -->
-  <script src="byteReduction.js"></script>
+    if (!hasUrl) {
+      // Show helper text if no ?url=
+      const msg = document.createElement('p');
+      msg.style.color = '#bbb';
+      msg.style.marginTop = '1em';
+      msg.textContent = 'Paste an image URL above or use the ByteReduction 🔍 bookmarklet.';
+      document.querySelector('body').appendChild(msg);
+    } else {
+      // ✅ Only load script if a URL parameter is present
+      const script = document.createElement('script');
+      script.src = 'byteReduction.js';
+      document.body.appendChild(script);
+    }
+  </script>
 
 </body>
 </html>
