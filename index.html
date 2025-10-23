@@ -101,7 +101,22 @@
     <img id="imageBoxL" width="800" />
   </div>
 
-  <!-- Load script -->
+  <!-- 🛠️ Guard for empty URL parameter -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      const url = params.get('url');
+      if (!url || url.trim() === '') {
+        const msg = document.createElement('p');
+        msg.style.color = '#bbb';
+        msg.style.marginTop = '1em';
+        msg.textContent = 'Paste an image URL above or use the ByteReduction 🔍 bookmarklet.';
+        document.querySelector('body').appendChild(msg);
+      }
+    });
+  </script>
+
+  <!-- Load main logic -->
   <script src="byteReduction.js"></script>
 
 </body>
