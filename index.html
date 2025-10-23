@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ByteReduction</title>
   <link rel="icon" href="https://res.cloudinary.com/patrickg-dev/image/upload/w_32,f_auto,q_auto/logo" />
   <style>
@@ -14,53 +14,24 @@
       margin: 0;
       padding: 2em;
     }
-    .header {
-      font-size: 1.5em;
-      font-weight: 700;
-      margin-bottom: 1em;
-    }
-    .input-inline {
-      padding: 0.4em;
-      border-radius: 4px;
-      border: none;
-      width: 70%;
-      margin: 0.3em;
-    }
-    .button {
-      background-color: #3F5FFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 0.6em 1.2em;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .button:hover {
-      background-color: #5f7fff;
-    }
-    .hidden-class {
-      display: none;
-    }
-    .show-class {
-      display: block;
-      margin-top: 2em;
-    }
-    img {
-      border-radius: 8px;
-      margin: 0.5em;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
+    .header { font-size: 1.5em; font-weight: 700; margin-bottom: 1em; }
+    .input-inline { padding: 0.4em; border-radius: 4px; border: none; width: 70%; margin: 0.3em; }
+    .button { background-color: #3F5FFF; color: white; border: none; border-radius: 4px;
+      padding: 0.6em 1.2em; cursor: pointer; font-weight: 600; }
+    .button:hover { background-color: #5f7fff; }
+    .hidden-class { display: none; }
+    .show-class { display: block; margin-top: 2em; }
+    img { border-radius: 8px; margin: 0.5em; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
   </style>
 </head>
-
 <body>
 
   <!-- 🌐 Bookmarklet Box -->
   <div id="bookmarklet-box"
-       style="margin: 1em auto; padding: 1em; border: 1px solid #3F5FFF; border-radius: 8px;
-              background: #0C163B; color: white; max-width: 600px;
-              opacity: 1; transition: opacity 0.6s ease, height 0.6s ease; overflow: hidden;">
-    <h3 style="margin-top: 0;">ByteReduction Bookmarklet</h3>
+       style="margin:1em auto;padding:1em;border:1px solid #3F5FFF;border-radius:8px;
+              background:#0C163B;color:white;max-width:600px;
+              opacity:1;transition:opacity 0.6s ease,height 0.6s ease;overflow:hidden;">
+    <h3 style="margin-top:0;">ByteReduction Bookmarklet</h3>
     <p>Drag this button to your bookmarks bar. Then, when viewing an image page, click it to launch ByteReduction with that image pre-loaded.</p>
     <p>
       <a class="bookmarklet-btn"
@@ -73,8 +44,8 @@
   </div>
 
   <script>
-    // Hide the bookmarklet box if already analysing an image
-    document.addEventListener('DOMContentLoaded', function() {
+    // Hide bookmarklet box when analysing
+    document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       if (params.has('url')) {
         const box = document.getElementById('bookmarklet-box');
@@ -101,25 +72,25 @@
     <img id="imageBoxL" width="800" />
   </div>
 
-  <!-- 🛠️ Prevent script from running on empty query -->
+  <!-- Show helper text for no ?url= -->
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const hasUrl = params.has('url') && params.get('url').trim() !== '';
-
-    if (!hasUrl) {
-      // Show helper text if no ?url=
-      const msg = document.createElement('p');
-      msg.style.color = '#bbb';
-      msg.style.marginTop = '1em';
-      msg.textContent = 'Paste an image URL above or use the ByteReduction 🔍 bookmarklet.';
-      document.querySelector('body').appendChild(msg);
-    } else {
-      // ✅ Only load script if a URL parameter is present
-      const script = document.createElement('script');
-      script.src = 'byteReduction.js';
-      document.body.appendChild(script);
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const url = params.get('url');
+      if (!url || url.trim() === '') {
+        const msg = document.createElement('p');
+        msg.style.color = '#bbb';
+        msg.style.marginTop = '1em';
+        msg.textContent = 'Paste an image URL above or use the ByteReduction 🔍 bookmarklet.';
+        document.body.appendChild(msg);
+      } else {
+        document.getElementById('url').value = url;
+      }
+    });
   </script>
+
+  <!-- ✅ Always load main logic so the button works -->
+  <script src="byteReduction.js"></script>
 
 </body>
 </html>
